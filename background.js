@@ -1,10 +1,9 @@
-// background.js
-import { isCustomMatch } from './utils.js';
+import { isCustomMatch, createTimer } from './utils.js';
 
 // 2. Function to traverse the Bookmark Tree
 async function searchBookmarks(bookmarkNodes, currentUrl) {
   for (const node of bookmarkNodes) {
-    // If it's a URL (leaf node)
+
     if (node.url) {
       if (await isCustomMatch(currentUrl, node.url)) {
         return true; // Match found!
@@ -23,8 +22,10 @@ async function searchBookmarks(bookmarkNodes, currentUrl) {
 async function checkCurrentTab(tabId, tabUrl) {
   if (!tabUrl) return;
 
+  const timer = createTimer('Check Current Tab');
   const bookmarkTreeNodes = await chrome.bookmarks.getTree();
   const isSaved = await searchBookmarks(bookmarkTreeNodes, tabUrl);
+  timer.end();
 
   if (isSaved) {
     // Change icon to indicate "SAVED" (e.g., Green icon or badge)

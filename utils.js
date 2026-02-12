@@ -1,5 +1,19 @@
 // Shared utility functions
 
+// Timer utility for performance measurement
+export function createTimer(label = 'Operation') {
+  const start = performance.now();
+  
+  return {
+    end: () => {
+      const end = performance.now();
+      const duration = (end - start).toFixed(2);
+      console.log(`⏱️ [${label}] took ${duration}ms`);
+      return duration;
+    }
+  };
+}
+
 export async function isCustomMatch(currentUrlString, bookmarkUrlString) {
   try {
     const currentUrl = new URL(currentUrlString);

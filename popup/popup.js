@@ -1,6 +1,6 @@
-// filepath: c:\Users\jim.pau\vscode\superBM\popup\popup.js
-import { isCustomMatch } from '../utils.js';
+import { isCustomMatch, createTimer } from '../utils.js';
 
+// Listen for button click in popup screen
 document.getElementById('checkBookmarks').addEventListener('click', async () => {
     try {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -8,7 +8,9 @@ document.getElementById('checkBookmarks').addEventListener('click', async () => 
 
         const bookmarkTreeNodes = await chrome.bookmarks.getTree();
 
+        const timer = createTimer('Find Matching Bookmarks'); // Start timer for matching
         const matches = await findMatchingBookmarks(bookmarkTreeNodes, currentUrl);
+        timer.end(); // Log time taken for matching
 
         console.log('Bookmark Tree:', bookmarkTreeNodes);
         console.log('Current URL:', currentUrl);
@@ -19,34 +21,40 @@ document.getElementById('checkBookmarks').addEventListener('click', async () => 
         const resultList = document.getElementById('result_list');
 
             if (matches.length > 0) {
+                // Display matches in the popup
                 resultTitle.textContent = `Found ${matches.length} matching bookmark(s)`;
                 resultList.innerHTML = matches
-                    .map((bm) => `<li><strong>${bm.name}</strong><br><small>${bm.url}</small><br><small>Parent: ${bm.parentInfo.title}</small></li>`)
+                    .map((bm) => `<li><strong>${bm.name}</strong><br><small>URL: ${bm.url}</small><br><small>Parent folder: ${bm.parentInfo.title}</small><br><small>Added date: ${bm.addDate}</small></li>`)
                     .join('');
             } else {
+                // No matches
                 resultTitle.textContent = 'No matching bookmarks found';
                 resultList.innerHTML = '';
             }
 
         } catch (error) {
-            // 使用 async/await 的好處是可以用 try/catch 抓錯誤
-            console.error("發生錯誤:", error);
+            console.error("error:", error);
         }
     });
 
+
+// Function to find matches
 async function findMatchingBookmarks(nodes, currentUrl, results = []) {
     for (const node of nodes) {
         if (node.url && await isCustomMatch(currentUrl, node.url)) {
             const parentInfo = await chrome.bookmarks.get(node.parentId);
+            // Store matches info to results (may need to change by settings, later)
             results.push({ 
                 node: node,
                 Id: node.id,
                 name: node.title,
                 url: node.url, 
                 parentId: node.parentId, 
+                addDate: new Date(node.dateAdded).toISOString().split('T')[0],
                 parentInfo: parentInfo[0]
             });
         }
+        // If it's a folder, search recursively
         if (node.children) {
             await findMatchingBookmarks(node.children, currentUrl, results);
         }
