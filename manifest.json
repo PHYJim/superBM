@@ -8,12 +8,14 @@
     "tabs"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "action": {
     "default_title": "Check Bookmark",
     "default_icon": {
       "16": "icon-default.png"
-    }
+    },
+    "default_popup": "./popup/popup.html"
   }
 }

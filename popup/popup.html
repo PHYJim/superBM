@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style="font-family: Arial, sans-serif; padding: 20px; width: 400px;">
+    <h1>SBM</h1>
+    <p>Click the button below to check your bookmarks.</p>
+    <button id="checkBookmarks" style="padding: 10px 20px; font-size: 16px;">Check Bookmarks</button>
+    <div id="result" style="margin-top: 20px;">
+        <!-- Results will be displayed here, injected by popup.js -->
+        <h2 id="result_title" style="font-size: 18px; margin-bottom: 10px;"></h2>
+        <div id="result_content" style="font-size: 14px;">
+            <ul id="result_list" style="padding-left: 20px;">
+                <!-- found bookmarks will be listed here, with name, url, folder path. injected by popup.js -->
+            </ul>
+        </div>
+
+    </div>
+    <script type="module" src="popup.js"></script>
+</body>
+</html>

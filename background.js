@@ -1,34 +1,5 @@
 // background.js
-
-// 1. YOUR CUSTOM LOGIC HERE
-// This function compares the current Tab URL vs a Bookmark URL
-function isCustomMatch(currentUrlString, bookmarkUrlString) {
-  try {
-    const currentUrl = new URL(currentUrlString);
-    const bookmarkUrl = new URL(bookmarkUrlString);
-
-    // Example Logic: Ignore the subdomains (www, uk, etc.) and protocol
-    // So 'https://www.google.com/maps' matches 'http://uk.google.com/maps'
-    
-    // Get host parts (e.g., ["www", "example", "com"])
-    const currentHostParts = currentUrl.hostname.split('.');
-    const bookmarkHostParts = bookmarkUrl.hostname.split('.');
-
-    // simplistic approach: check if the last two parts match (example.com)
-    // Note: This is where you write your complex logic
-    const currentDomain = currentHostParts.slice(-2).join('.');
-    const bookmarkDomain = bookmarkHostParts.slice(-2).join('.');
-
-    const domainMatch = currentDomain === bookmarkDomain;
-    const pathMatch = currentUrl.pathname === bookmarkUrl.pathname;
-
-    return domainMatch && pathMatch;
-
-  } catch (e) {
-    // If URL parsing fails (e.g. javascript: URLs), return false
-    return false;
-  }
-}
+import { isCustomMatch } from './utils.js';
 
 // 2. Function to traverse the Bookmark Tree
 function searchBookmarks(bookmarkNodes, currentUrl) {
