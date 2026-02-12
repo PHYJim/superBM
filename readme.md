@@ -7,6 +7,7 @@ Currently in very-very-early development. Contributions, ideas, and feedback are
 ### Features (currently)
 - Show yes in the plugin icon if the curent page is macthed in your bookmarks
 - Click icon will popup screen to display a list of matching.
+- Matching logic in utils.js => isCustomMatch()
 
 ### 🚀 Features (Planned)
 #### Popup Top Bar
