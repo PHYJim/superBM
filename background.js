@@ -2,17 +2,17 @@
 import { isCustomMatch } from './utils.js';
 
 // 2. Function to traverse the Bookmark Tree
-function searchBookmarks(bookmarkNodes, currentUrl) {
+async function searchBookmarks(bookmarkNodes, currentUrl) {
   for (const node of bookmarkNodes) {
     // If it's a URL (leaf node)
     if (node.url) {
-      if (isCustomMatch(currentUrl, node.url)) {
+      if (await isCustomMatch(currentUrl, node.url)) {
         return true; // Match found!
       }
     }
     // If it's a folder, search recursively
     if (node.children) {
-      const foundInChildren = searchBookmarks(node.children, currentUrl);
+      const foundInChildren = await searchBookmarks(node.children, currentUrl);
       if (foundInChildren) return true;
     }
   }
@@ -20,36 +20,42 @@ function searchBookmarks(bookmarkNodes, currentUrl) {
 }
 
 // 3. Main function to run the check
-function checkCurrentTab(tabId, tabUrl) {
+async function checkCurrentTab(tabId, tabUrl) {
   if (!tabUrl) return;
 
-  chrome.bookmarks.getTree((bookmarkTreeNodes) => {
-    const isSaved = searchBookmarks(bookmarkTreeNodes, tabUrl);
+  const bookmarkTreeNodes = await chrome.bookmarks.getTree();
+  const isSaved = await searchBookmarks(bookmarkTreeNodes, tabUrl);
 
-    if (isSaved) {
-      // Change icon to indicate "SAVED" (e.g., Green icon or badge)
-      chrome.action.setBadgeText({ text: "YES", tabId: tabId });
-      chrome.action.setBadgeBackgroundColor({ color: "green", tabId: tabId });
-    } else {
-      // Clear badge or set to "NO"
-      chrome.action.setBadgeText({ text: "", tabId: tabId });
-    }
-  });
+  if (isSaved) {
+    // Change icon to indicate "SAVED" (e.g., Green icon or badge)
+    chrome.action.setBadgeText({ text: "YES", tabId: tabId });
+    chrome.action.setBadgeBackgroundColor({ color: "green", tabId: tabId });
+  } else {
+    // Clear badge
+    chrome.action.setBadgeText({ text: "", tabId: tabId });
+  }
 }
 
 // 4. Listeners
 // Trigger when a tab is updated (e.g., user types a new URL)
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
-    checkCurrentTab(tabId, tab.url);
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  try {
+    if (changeInfo.status === 'complete' && tab.url) {
+      checkCurrentTab(tabId, tab.url).catch(error => console.error("Error checking tab (on update):", error));
+    }
+  } catch (error) {
+    console.error("Error fetching tab info (on update):", error);
   }
 });
 
 // Trigger when user switches tabs
-chrome.tabs.onActivated.addListener((activeInfo) => {
-  chrome.tabs.get(activeInfo.tabId, (tab) => {
+chrome.tabs.onActivated.addListener(async (activeInfo) => {
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
     if (tab.url) {
-      checkCurrentTab(activeInfo.tabId, tab.url);
+      checkCurrentTab(activeInfo.tabId, tab.url).catch(error => console.error("Error checking tab (on activation):", error));
     }
-  });
+  } catch (error) {
+    console.error("Error fetching tab info (on activation):", error);
+  }
 });

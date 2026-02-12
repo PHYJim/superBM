@@ -1,6 +1,6 @@
 // Shared utility functions
 
-export function isCustomMatch(currentUrlString, bookmarkUrlString) {
+export async function isCustomMatch(currentUrlString, bookmarkUrlString) {
   try {
     const currentUrl = new URL(currentUrlString);
     const bookmarkUrl = new URL(bookmarkUrlString);

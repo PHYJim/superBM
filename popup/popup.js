@@ -21,7 +21,7 @@ document.getElementById('checkBookmarks').addEventListener('click', async () => 
             if (matches.length > 0) {
                 resultTitle.textContent = `Found ${matches.length} matching bookmark(s)`;
                 resultList.innerHTML = matches
-                    .map((bm) => `<li><strong>${bm.name}</strong><br><small>${bm.url}</small><br><small>Parent: ${bm.parentInfo[0].title}</small></li>`)
+                    .map((bm) => `<li><strong>${bm.name}</strong><br><small>${bm.url}</small><br><small>Parent: ${bm.parentInfo.title}</small></li>`)
                     .join('');
             } else {
                 resultTitle.textContent = 'No matching bookmarks found';
@@ -36,7 +36,7 @@ document.getElementById('checkBookmarks').addEventListener('click', async () => 
 
 async function findMatchingBookmarks(nodes, currentUrl, results = []) {
     for (const node of nodes) {
-        if (node.url && isCustomMatch(currentUrl, node.url)) {
+        if (node.url && await isCustomMatch(currentUrl, node.url)) {
             const parentInfo = await chrome.bookmarks.get(node.parentId);
             results.push({ 
                 node: node,
@@ -44,7 +44,7 @@ async function findMatchingBookmarks(nodes, currentUrl, results = []) {
                 name: node.title,
                 url: node.url, 
                 parentId: node.parentId, 
-                parentInfo: parentInfo
+                parentInfo: parentInfo[0]
             });
         }
         if (node.children) {
