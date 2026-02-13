@@ -1,63 +1,45 @@
-import { isCustomMatch, createTimer } from '../utils.js';
+import { isCustomMatch, createTimer, findMatchingList } from '../utils.js';
 
-// Listen for button click in popup screen
-document.getElementById('checkBookmarks').addEventListener('click', async () => {
+//  Main function to run the bookmark check and display results in the popup
+async function runBookmarkCheck() {
     try {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
         const currentUrl = tabs[0].url;
+        const currentTitle = tabs[0].title;
 
         const bookmarkTreeNodes = await chrome.bookmarks.getTree();
 
         const timer = createTimer('Find Matching Bookmarks'); // Start timer for matching
-        const matches = await findMatchingBookmarks(bookmarkTreeNodes, currentUrl);
+        const matches = await findMatchingList(bookmarkTreeNodes, currentUrl);
         timer.end(); // Log time taken for matching
 
         console.log('Bookmark Tree:', bookmarkTreeNodes);
         console.log('Current URL:', currentUrl);
+        console.log('Current Title:', currentTitle);
         console.log('Matching bookmarks:', matches);
 
         // Display results
         const resultTitle = document.getElementById('result_title');
         const resultList = document.getElementById('result_list');
 
-            if (matches.length > 0) {
-                // Display matches in the popup
-                resultTitle.textContent = `Found ${matches.length} matching bookmark(s)`;
-                resultList.innerHTML = matches
-                    .map((bm) => `<li><strong>${bm.name}</strong><br><small>URL: ${bm.url}</small><br><small>Parent folder: ${bm.parentInfo.title}</small><br><small>Added date: ${bm.addDate}</small></li>`)
-                    .join('');
-            } else {
-                // No matches
-                resultTitle.textContent = 'No matching bookmarks found';
-                resultList.innerHTML = '';
-            }
-
-        } catch (error) {
-            console.error("error:", error);
+        if (matches.length > 0) {
+            // Display matches in the popup
+            resultTitle.textContent = `Found ${matches.length} matching bookmark(s)`;
+            resultList.innerHTML = matches
+                .map((bm) => `<li><strong>${bm.name}</strong><br><small>URL: ${bm.url}</small><br><small>Parent folder: ${bm.parentInfo.title}</small><br><small>Added date: ${bm.addDate}</small></li>`)
+                .join('');
+        } else {
+            // No matches
+            resultTitle.textContent = 'No matching bookmarks found';
+            resultList.innerHTML = '';
         }
-    });
 
-
-// Function to find matches
-async function findMatchingBookmarks(nodes, currentUrl, results = []) {
-    for (const node of nodes) {
-        if (node.url && await isCustomMatch(currentUrl, node.url)) {
-            const parentInfo = await chrome.bookmarks.get(node.parentId);
-            // Store matches info to results (may need to change by settings, later)
-            results.push({ 
-                node: node,
-                Id: node.id,
-                name: node.title,
-                url: node.url, 
-                parentId: node.parentId, 
-                addDate: new Date(node.dateAdded).toISOString().split('T')[0],
-                parentInfo: parentInfo[0]
-            });
-        }
-        // If it's a folder, search recursively
-        if (node.children) {
-            await findMatchingBookmarks(node.children, currentUrl, results);
-        }
+    } catch (error) {
+        console.error("error:", error);
     }
-    return results;
 }
+
+
+// Add event listener to button and run on popup open
+document.getElementById('checkBookmarks').addEventListener('click', runBookmarkCheck);
+document.addEventListener('DOMContentLoaded', runBookmarkCheck); // Run on popup open as well

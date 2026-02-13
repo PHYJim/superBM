@@ -1,30 +1,14 @@
-import { isCustomMatch, createTimer } from './utils.js';
+import { isCustomMatch, createTimer, findMatchingList, findMatchingBoolean } from './utils.js';
 
-// 2. Function to traverse the Bookmark Tree
-async function searchBookmarks(bookmarkNodes, currentUrl) {
-  for (const node of bookmarkNodes) {
 
-    if (node.url) {
-      if (await isCustomMatch(currentUrl, node.url)) {
-        return true; // Match found!
-      }
-    }
-    // If it's a folder, search recursively
-    if (node.children) {
-      const foundInChildren = await searchBookmarks(node.children, currentUrl);
-      if (foundInChildren) return true;
-    }
-  }
-  return false;
-}
 
-// 3. Main function to run the check
+// Main function to run the check
 async function checkCurrentTab(tabId, tabUrl) {
   if (!tabUrl) return;
 
   const timer = createTimer('Check Current Tab');
   const bookmarkTreeNodes = await chrome.bookmarks.getTree();
-  const isSaved = await searchBookmarks(bookmarkTreeNodes, tabUrl);
+  const isSaved = await findMatchingBoolean(bookmarkTreeNodes, tabUrl);
   timer.end();
 
   if (isSaved) {
@@ -37,7 +21,7 @@ async function checkCurrentTab(tabId, tabUrl) {
   }
 }
 
-// 4. Listeners
+// Listeners
 // Trigger when a tab is updated (e.g., user types a new URL)
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   try {
