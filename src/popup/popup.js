@@ -4,18 +4,17 @@ import { isCustomMatch, createTimer, findMatchingList } from '../utils.js';
 async function runBookmarkCheck() {
     try {
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        const currentUrl = tabs[0].url;
-        const currentTitle = tabs[0].title;
+        const currentTab = tabs[0];
 
         const bookmarkTreeNodes = await chrome.bookmarks.getTree();
 
         const timer = createTimer('Find Matching Bookmarks'); // Start timer for matching
-        const matches = await findMatchingList(bookmarkTreeNodes, currentUrl);
+        const matches = await findMatchingList(bookmarkTreeNodes, currentTab);
         timer.end(); // Log time taken for matching
 
         console.log('Bookmark Tree:', bookmarkTreeNodes);
-        console.log('Current URL:', currentUrl);
-        console.log('Current Title:', currentTitle);
+        console.log('Current URL:', currentTab.url);
+        console.log('Current Title:', currentTab.title);
         console.log('Matching bookmarks:', matches);
 
         // Display results

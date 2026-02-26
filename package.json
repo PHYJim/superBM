@@ -1,0 +1,29 @@
+{
+  "name": "superbm",
+  "version": "1.0.0",
+  "description": "A browser plugin designed to manage and organize your bookmarks with smart matching, customizable rules, and intuitive controls.",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PHYJim/superBM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/PHYJim/superBM/issues"
+  },
+  "homepage": "https://github.com/PHYJim/superBM#readme",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "string-similarity": "^4.0.4"
+  }
+}

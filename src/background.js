@@ -3,12 +3,12 @@ import { isCustomMatch, createTimer, findMatchingList, findMatchingBoolean } fro
 
 
 // Main function to run the check
-async function checkCurrentTab(tabId, tabUrl) {
-  if (!tabUrl) return;
+async function checkCurrentTab(tabId, currentTab) {
+  if (!currentTab.url) return;
 
   const timer = createTimer('Check Current Tab');
   const bookmarkTreeNodes = await chrome.bookmarks.getTree();
-  const isSaved = await findMatchingBoolean(bookmarkTreeNodes, tabUrl);
+  const isSaved = await findMatchingBoolean(bookmarkTreeNodes, currentTab);
   timer.end();
 
   if (isSaved) {
@@ -26,7 +26,7 @@ async function checkCurrentTab(tabId, tabUrl) {
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   try {
     if (changeInfo.status === 'complete' && tab.url) {
-      checkCurrentTab(tabId, tab.url).catch(error => console.error("Error checking tab (on update):", error));
+      checkCurrentTab(tabId, tab).catch(error => console.error("Error checking tab (on update):", error));
     }
   } catch (error) {
     console.error("Error fetching tab info (on update):", error);
@@ -36,9 +36,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 // Trigger when user switches tabs
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab.url) {
-      checkCurrentTab(activeInfo.tabId, tab.url).catch(error => console.error("Error checking tab (on activation):", error));
+    const currentTab = await chrome.tabs.get(activeInfo.tabId);
+    if (currentTab.url) {
+      checkCurrentTab(activeInfo.tabId, currentTab).catch(error => console.error("Error checking tab (on activation):", error));
     }
   } catch (error) {
     console.error("Error fetching tab info (on activation):", error);
