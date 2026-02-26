@@ -50,12 +50,13 @@ export async function isDomainMatch(bookmarkUrlString, currentUrlString) {
   }
 }
 
-export async function isTitleMatch(bookmarkTitle, currentTitle) {
+export async function isTitleMatch(bookmarkTitle, currentTitle, threshold = 0.85) {
   try {
-    return stringSimilarity.compareTwoStrings(bookmarkTitle, currentTitle) > 0.8; // Adjust threshold as needed
+    const similarity = stringSimilarity.compareTwoStrings(bookmarkTitle, currentTitle);
+    return [similarity > threshold, similarity]; // Adjust threshold as needed
   } catch (e) {
     // If comparison fails, return false
-    return false;
+    return [false, 0];
   }
 }
 
@@ -64,7 +65,7 @@ export async function findMatchingList(nodes, currentTab, results = []) {
   for (const node of nodes) {
 
     const domainMatch = node.url && await isDomainMatch(node.url, currentTab.url);
-    const titleMatch = await isTitleMatch(node.title, currentTab.title);
+    const [titleMatch, similarity] = await isTitleMatch(node.title, currentTab.title);
 
     if (domainMatch && titleMatch) {
       const parentInfo = await chrome.bookmarks.get(node.parentId);
@@ -76,6 +77,7 @@ export async function findMatchingList(nodes, currentTab, results = []) {
         url: node.url,
         parentId: node.parentId,
         addDate: new Date(node.dateAdded).toISOString().split('T')[0],
+        similarity: similarity.toFixed(2),
         parentInfo: parentInfo[0]
       });
     }
@@ -92,7 +94,7 @@ export async function findMatchingBoolean(nodes, currentTab) {
   for (const node of nodes) {
     
     const domainMatch = node.url && await isDomainMatch(node.url, currentTab.url);
-    const titleMatch = await isTitleMatch(node.title, currentTab.title);
+    const [titleMatch, similarity] = await isTitleMatch(node.title, currentTab.title);
 
     if (domainMatch && titleMatch) {
       return true; // Match found!
