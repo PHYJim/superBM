@@ -5,7 +5,10 @@
   "description": "Checks if the current URL matches a bookmark.",
   "permissions": [
     "bookmarks",
-    "tabs"
+    "tabs",
+    "contextMenus",
+    "scripting",
+    "activeTab"
   ],
   "background": {
     "service_worker": "dist/assets/background.js",

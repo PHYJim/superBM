@@ -31,7 +31,7 @@ Currently in very-very-early development. Contributions, ideas, and feedback are
 
 
 ### 🛠️ To-Do List
-- [ ] Implement popup UI with bookmark details
+- [x] Implement popup UI with bookmark details
 - [ ] Build full settings page
 - [ ] Add shortcut configuration
 - [ ] Enable pre-load URL scanning
