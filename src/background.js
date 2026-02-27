@@ -65,11 +65,19 @@ chrome.contextMenus.onClicked.addListener(async (Info, tab) => {
       target: { tabId: tab.id },
       func: getLinksFromSelection,
     });
-    const list = results[0].result; // Get the returned links from the content script
+    const linkList = results[0].result; // Get the returned links from the content script
+    // console.log("Extracted links from selection:", linkList);
+    for (let i = 0; i < linkList.length; i++) {
+      console.log(`Processing item ${i}:`, linkList[i]);
+      const item = linkList[i];
+      const match = await findMatchingList(await chrome.bookmarks.getTree(), item);
+      linkList[i].match = match; // Add matches info to each item
+    }
+      
     await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       func: showModal,
-      args: [list]
+      args: [linkList]
     });
 
     console.log("Links from selection:", results);
@@ -82,13 +90,13 @@ chrome.contextMenus.onClicked.addListener(async (Info, tab) => {
 function getLinksFromSelection() {
   const selection = window.getSelection();
   // Create a temporary container to hold the HTML of the selection
-  const container = document.createElement("div");
+  const container = document.createElement('div');
   for (let i = 0; i < selection.rangeCount; i++) {
     container.appendChild(selection.getRangeAt(i).cloneContents());
   }
 
   // Find all links inside that selection
-  const links = container.querySelectorAll("a");
+  const links = container.querySelectorAll('a');
   
   // Return an array of objects with text and href
   return Array.from(links).map(link => ({
@@ -99,9 +107,9 @@ function getLinksFromSelection() {
 
 
 // ==========================================
-// FUNCTION 2: Show Modal UI (Runs in Page)
+// Show Modal UI (Runs in Page)
 // ==========================================
-function showModal(links) {
+function showModal(linkList) {
   // 1. Remove existing modal if open
   const existing = document.getElementById('superbm-host');
   if (existing) existing.remove();
@@ -136,7 +144,7 @@ function showModal(links) {
     h2 { margin-top: 0; color: #333; font-size: 18px; }
     ul { list-style: none; padding: 0; }
     li { border-bottom: 1px solid #eee; padding: 8px 0; }
-    a { color: #007bff; text-decoration: none; word-break: break-all; }
+    a { color: #007bff; text-decoration: none; word-break: break-all; font-size: 10px; }
     a:hover { text-decoration: underline; }
     .close-btn {
       margin-top: 15px; padding: 8px 16px; background: #333; 
@@ -154,15 +162,18 @@ function showModal(links) {
   box.className = 'modal-box';
 
   const title = document.createElement('h2');
-  title.textContent = `Found ${links.length} Links`;
+  title.textContent = `Found ${linkList.length} Links`;
   
   const list = document.createElement('ul');
   
-  if (links.length === 0) {
+  if (linkList.length === 0) {
     list.innerHTML = `<li style="color: #666; text-align: center;">No links in selection</li>`;
   } else {
-    links.forEach(link => {
+    linkList.forEach(link => {
       const li = document.createElement('li');
+      if (link.match && link.match.length > 0) {
+        li.style.backgroundColor = '#ff0000'; // Red for matches
+      }
       li.innerHTML = `
         <span class="label">${link.title}</span>
         <a href="${link.url}" target="_blank">${link.url}</a>
