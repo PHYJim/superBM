@@ -6,6 +6,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+
+    // for debug
+    // STOP scrambling variable names and removing spaces
+    minify: false, 
+    // Add Source Maps (Use 'inline' for extensions to avoid file path errors)
+    sourcemap: 'inline',
+    
     rollupOptions: {
       input: {
         // Entry Point 1: The Popup HTML
