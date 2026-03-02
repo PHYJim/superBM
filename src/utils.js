@@ -38,23 +38,23 @@ export async function isUrlMatch(bookmarkUrlString, currentUrlString) {
   try {
     const bookmarkUrl = new URL(bookmarkUrlString);
     const currentUrl = new URL(currentUrlString);
-    let count= 0;
-    
+    let count = 0;
+
     // Domain match (using custom logic)
     const domainMatchResult = await isDomainMatch(bookmarkUrlString, currentUrlString);
     const domainMatch = domainMatchResult ? 1.0 : 0.0;
-    let totalSimilarity =  domainMatch;
+    let totalSimilarity = domainMatch;
     if (domainMatchResult) {
       count++;
     }
 
     // Path match (implement Weighted)
     if (bookmarkUrl.pathname && currentUrl.pathname) {
-      const wholePathSimilarity =  stringSimilarity.compareTwoStrings(bookmarkUrl.pathname, currentUrl.pathname);
+      const wholePathSimilarity = stringSimilarity.compareTwoStrings(bookmarkUrl.pathname, currentUrl.pathname);
       const lastSegmentBookmark = bookmarkUrl.pathname.split('/').filter(Boolean).slice(-1)[0] || '';
       const lastSegmentCurrent = currentUrl.pathname.split('/').filter(Boolean).slice(-1)[0] || '';
       const lastSegmentMatch = stringSimilarity.compareTwoStrings(lastSegmentBookmark, lastSegmentCurrent);
-      totalSimilarity += (wholePathSimilarity + lastSegmentMatch*4) / 5;
+      totalSimilarity += (wholePathSimilarity + lastSegmentMatch * 4) / 5;
       count++;
     }
 
@@ -111,7 +111,7 @@ export async function isTitleMatch(bookmarkTitle, currentTitle, threshold = 0.85
 }
 
 // Function to find matches list
-export async function findMatchingList(nodes, currentTab,  mode = 'default', match = []) {
+export async function findMatchingList(nodes, currentTab, mode = 'default', match = []) {
   for (const node of nodes) {
     const domainMatch = node.url && await isDomainMatch(node.url, currentTab.url);
     const [titleMatch, similarity] = await isTitleMatch(node.title, currentTab.title);

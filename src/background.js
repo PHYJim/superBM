@@ -1,5 +1,40 @@
-import { isCustomMatch, createTimer, findMatchingList, findMatchingBoolean } from './utils.js';
+import { createTimer, findMatchingList, findMatchingBoolean } from './utils.js';
 
+// ai config
+import { pipeline, env } from '@huggingface/transformers';
+
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+
+// 全局变量缓存模型
+let classifier = null;
+
+// 初始化 AI 模型
+async function getClassifier() {
+    if (!classifier) {
+        // v3 新特性：device: 'webgpu'
+        // 这会尝试调用显卡加速。如果浏览器不支持，它会自动回退到 wasm (CPU)。
+        classifier = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
+            device: 'webgpu',  
+            dtype: 'q8' // q8 是量化版本，体积小 (约 20MB)
+        });
+    }
+    return classifier;
+}
+
+// 生成向量 (Embedding)
+async function getVector(text) {
+    const model = await getClassifier();
+    // pooling: 'mean' 是把一句话的所有单词特征平均成一个向量
+    const output = await model(text, { pooling: 'mean', normalize: true });
+    return Array.from(output.data);
+}
+
+chrome.bookmarks.onCreated.addListener(async (id, bookmark) => {
+  console.log("Bookmark created:", bookmark);
+  const vector = await getVector(bookmark.title + " " + bookmark.url);
+  console.log("Generated vector for new bookmark:", vector);
+});
 
 
 // Main function to run the check
